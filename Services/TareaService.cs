@@ -2,8 +2,8 @@
 using TdoTareasBackend.Data;
 using TdoTareasBackend.Models;
 
-namespace TdoTareasBackend.Services
 
+namespace TdoTareasBackend.Services
 {
     public class TareaService : ITareasService
     {
@@ -14,6 +14,7 @@ namespace TdoTareasBackend.Services
             _context = context;
         }
 
+        // Métodos existentes
         public async Task<IEnumerable<Tareas>> GetAllTareasAsync()
         {
             return await _context.Tareas.ToListAsync();
@@ -38,7 +39,6 @@ namespace TdoTareasBackend.Services
         {
             if (id != tarea.Id)
                 throw new ArgumentException("ID no coincide");
-
             _context.Entry(tarea).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return true;
@@ -49,7 +49,6 @@ namespace TdoTareasBackend.Services
             var tarea = await _context.Tareas.FindAsync(id);
             if (tarea == null)
                 return false;
-
             _context.Tareas.Remove(tarea);
             await _context.SaveChangesAsync();
             return true;
@@ -58,9 +57,49 @@ namespace TdoTareasBackend.Services
         public async Task<IEnumerable<Tareas>> GetTareasByCompletionAsync(bool isComplete)
         {
             return await _context.Tareas
-       .Where(t => t.IsComplete == isComplete)
-       .ToListAsync();
+                .Where(t => t.IsComplete == isComplete)
+                .ToListAsync();
+        }
+
+        // Nuevos métodos para paginación
+        public async Task<PagedResponse<Tareas>> GetPagedTareasAsync(PaginationParameters parameters)
+        {
+            IQueryable<Tareas> query = _context.Tareas;
+
+            var count = await query.CountAsync();
+            var items = await query
+                .Skip((parameters.PageNumber - 1) * parameters.PageSize)
+                .Take(parameters.PageSize)
+                .ToListAsync();
+
+            return new PagedResponse<Tareas>
+            {
+                Items = items,
+                PageNumber = parameters.PageNumber,
+                PageSize = parameters.PageSize,
+                TotalCount = count,
+                TotalPages = (int)Math.Ceiling(count / (double)parameters.PageSize)
+            };
+        }
+
+        public async Task<PagedResponse<Tareas>> GetPagedTareasByCompletionAsync(bool isComplete, PaginationParameters parameters)
+        {
+            IQueryable<Tareas> query = _context.Tareas.Where(t => t.IsComplete == isComplete);
+
+            var count = await query.CountAsync();
+            var items = await query
+                .Skip((parameters.PageNumber - 1) * parameters.PageSize)
+                .Take(parameters.PageSize)
+                .ToListAsync();
+
+            return new PagedResponse<Tareas>
+            {
+                Items = items,
+                PageNumber = parameters.PageNumber,
+                PageSize = parameters.PageSize,
+                TotalCount = count,
+                TotalPages = (int)Math.Ceiling(count / (double)parameters.PageSize)
+            };
         }
     }
-
-    }
+}

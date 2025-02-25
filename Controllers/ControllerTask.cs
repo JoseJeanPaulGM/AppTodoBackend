@@ -11,19 +11,18 @@ namespace TdoTareasBackend.Controllers
     public class ControllerTask : Controller
     {
         private readonly ITareasService _tareasService;
-
         public ControllerTask(ITareasService tareasService)
         {
             _tareasService = tareasService;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Tareas>>> GetTareas()
+        public async Task<ActionResult<PagedResponse<Tareas>>> GetTareas([FromQuery] PaginationParameters parameters)
         {
-            var tareas = await _tareasService.GetAllTareasAsync();
+            var tareas = await _tareasService.GetPagedTareasAsync(parameters);
             return Ok(tareas);
         }
-
+        // Los demás métodos se mantienen igual
         [HttpGet("{id}")]
         public async Task<ActionResult<Tareas>> GetTarea(int id)
         {

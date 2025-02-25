@@ -10,6 +10,10 @@ namespace TdoTareasBackend.Services
         Task<bool> UpdateTareaAsync(int id, Tareas tarea);
         Task<bool> DeleteTareaAsync(int id);
         Task<IEnumerable<Tareas>> GetTareasByCompletionAsync(bool isComplete);
-       
+
+        // Nuevos métodos para paginación
+        Task<PagedResponse<Tareas>> GetPagedTareasAsync(PaginationParameters parameters);
+        Task<PagedResponse<Tareas>> GetPagedTareasByCompletionAsync(bool isComplete, PaginationParameters parameters);
+
     }
 }
